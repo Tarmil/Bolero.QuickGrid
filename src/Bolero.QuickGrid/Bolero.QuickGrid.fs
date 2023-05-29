@@ -73,7 +73,7 @@ module QuickGrid =
     /// If true, renders draggable handles around the column headers, allowing the user to resize the columns
     /// manually. Size changes are not persisted.
     /// </summary>
-    let esizableColumns (value: bool) =
+    let resizableColumns (value: bool) =
         "ResizableColumns" => value
 
     /// <summary>

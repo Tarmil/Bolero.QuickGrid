@@ -1,0 +1,12 @@
+﻿.value-cell {
+    width: 20px;
+    height: 2em;
+    background: red;
+    display: inline-block;
+}
+
+.error {
+    background: #ff8888;
+    border: solid 1px red;
+    padding: 5px;
+}

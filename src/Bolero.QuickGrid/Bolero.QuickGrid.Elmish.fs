@@ -1,58 +1,54 @@
-﻿namespace Bolero
+﻿namespace Microsoft.AspNetCore.Components.QuickGrid.Elmish
 
+open System.Threading.Tasks
 open Elmish
 open Microsoft.AspNetCore.Components.QuickGrid
 
-type QuickGridMessage<'item> =
-    | GetItems of GridItemsProviderRequest<'item> * (GridItemsProviderResult<'item> -> unit)
+[<RequireQualifiedAccess>]
+module QuickGrid =
 
-module Cmd =
+    type Model<'item> =
+        { itemsProvider: GridItemsProvider<'item>
+          getItems: GridItemsProviderRequest<'item> -> Async<GridItemsProviderResult<'item>> }
 
-    module QuickGrid =
+    [<RequireQualifiedAccess>]
+    type Msg<'item> =
+        | GetItems of GridItemsProviderRequest<'item> * (GridItemsProviderResult<'item> -> unit) * (exn -> unit)
+        | InitItemsProvider of GridItemsProvider<'item>
+        | InternalError of exn
 
-        let either
-                (message: QuickGridMessage<'item>)
-                (getItems: GridItemsProviderRequest<'item> -> Async<GridItemsProviderResult<'item>>)
-                (ofSuccess: GridItemsProviderResult<'item> -> 'msg)
-                (ofError: exn -> 'msg)
-                : Cmd<'msg> =
-            match message with
-            | GetItems (request, callback) ->
-                Cmd.OfTask.either (fun request -> task {
-                    let! result = getItems request
-                    callback result
-                    return result
-                }) request ofSuccess ofError
+    type ExternalMsg<'item> =
+        | NoOp
+        | Error of exn
 
-        let perform
-                (message: QuickGridMessage<'item>)
-                (getItems: GridItemsProviderRequest<'item> -> Async<GridItemsProviderResult<'item>>)
-                (ofSuccess: GridItemsProviderResult<'item> -> 'msg)
-                : Cmd<'msg> =
-            match message with
-            | GetItems (request, callback) ->
-                Cmd.OfTask.perform (fun request -> task {
-                    let! result = getItems request
-                    callback result
-                    return result
-                }) request ofSuccess
+    let initItemProvider getItems : Model<'item> * Cmd<Msg<'item>> =
+        { itemsProvider = null; getItems = getItems },
+        [ fun dispatch ->
+            GridItemsProvider<'item>(fun request ->
+                let tcs = TaskCompletionSource<_>()
+                dispatch (Msg.GetItems (request, tcs.SetResult, tcs.SetException))
+                ValueTask<GridItemsProviderResult<_>>(tcs.Task))
+            |> Msg.InitItemsProvider
+            |> dispatch
+        ]
 
-        let attempt
-                (message: QuickGridMessage<'item>)
-                (getItems: GridItemsProviderRequest<'item> -> Async<GridItemsProviderResult<'item>>)
-                (ofError: exn -> 'msg)
-                : Cmd<'msg> =
-            match message with
-            | GetItems (request, callback) ->
-                Cmd.OfTask.attempt (fun request -> task {
-                    let! result = getItems request
-                    callback result
-                }) request ofError
+    let update (message: Msg<'item>) (model: Model<'item>) : Model<'item> * Cmd<Msg<'item>> * ExternalMsg<'item> =
+        match message with
+        | Msg.InitItemsProvider p ->
+            { model with itemsProvider = p }, Cmd.none, NoOp
+        | Msg.GetItems (request, callback, exnCallback) ->
+            model,
+            [ fun dispatch -> Async.Start (async {
+                try
+                    let! x = model.getItems request
+                    callback x
+                with exn ->
+                    exnCallback exn
+                    dispatch (Msg.InternalError exn)
+            }) ],
+            NoOp
+        | Msg.InternalError exn ->
+            model, Cmd.none, Error exn
 
-        let run
-                (message: QuickGridMessage<'item>)
-                (getItems: GridItemsProviderRequest<'item> -> Async<GridItemsProviderResult<'item>>)
-                : Cmd<'msg> =
-            match message with
-            | GetItems (request, callback) ->
-                [ fun _ -> Async.Start (async { let! x = getItems request in callback x }) ]
+    let withModel (model: Model<'item>) =
+        QuickGrid.withItemsProvider model.itemsProvider

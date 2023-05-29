@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Bolero.QuickGrid.Elmish.fs" />
     <Compile Include="Bolero.QuickGrid.fs" />
+    <Compile Include="Bolero.QuickGrid.Elmish.fs" />
   </ItemGroup>
 
   <ItemGroup>

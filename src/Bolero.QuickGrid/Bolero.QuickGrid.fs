@@ -1,9 +1,8 @@
-﻿namespace Bolero
+﻿namespace Microsoft.AspNetCore.Components.QuickGrid
 
 open System
 open System.Linq
 open System.Linq.Expressions
-open System.Threading.Tasks
 open Bolero
 open Bolero.Html
 open Microsoft.AspNetCore.Components.QuickGrid
@@ -24,16 +23,6 @@ module QuickGrid =
     let inline withItemsProvider<'GridItem> (provider: GridItemsProvider<'GridItem>) =
         "ItemsProvider" => provider
         |> Builders.ComponentWithAttrsBuilder<QuickGrid<'GridItem>>
-
-    /// <summary>
-    /// Component builder for a QuickGrid using an Elmish message to request data for the grid.
-    /// </summary>
-    let withElmishItemsProvider<'GridItem> (dispatch: QuickGridMessage<'GridItem> -> unit) =
-        GridItemsProvider<'GridItem>(fun request ->
-            let tcs = TaskCompletionSource<_>()
-            dispatch (GetItems (request, tcs.SetResult))
-            ValueTask<GridItemsProviderResult<_>>(tcs.Task))
-        |> withItemsProvider<'GridItem>
 
     /// <summary>
     /// An optional CSS class name. If given, this will be included in the class attribute of the rendered table.

@@ -14,3 +14,8 @@
 .paginator .summary input {
     width: 2em;
 }
+
+.virtualized-grid {
+    height: 15rem;
+    overflow-y: auto;
+}

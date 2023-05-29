@@ -73,7 +73,7 @@ module Main =
         | SetError error ->
             { model with error = error }, Cmd.none
 
-    let view model dispatch =
+    let paginatedGrid model dispatch =
         div {
             QuickGrid.withModel model.gridModel {
                 QuickGrid.pagination model.pagination
@@ -104,6 +104,37 @@ module Main =
             cond model.error <| function
                 | None -> empty()
                 | Some exn -> p { attr.``class`` "error"; exn.Message }
+        }
+
+    let virtualizedGrid model dispatch =
+        QuickGrid.withModel model.gridModel {
+            QuickGrid.virtualize true
+            QuickGrid.itemSize 32.f
+            QuickGrid.Column.property (fun item -> item.name) {
+                QuickGrid.Column.sortable true
+            }
+            QuickGrid.Column.template<Item> (fun (item: Item) ->
+                span {
+                    attr.``class`` "value-cell"
+                    $"{item.value}"
+                }
+            ) {
+                QuickGrid.Column.title "<blank>"
+                QuickGrid.Column.sortable true
+            }
+            QuickGrid.Column.property (fun item -> item.value) {
+                QuickGrid.Column.sortable true
+                QuickGrid.Column.title "index"
+            }
+        }
+
+    let view model dispatch =
+        div {
+            paginatedGrid model dispatch
+            div {
+                attr.``class`` "virtualized-grid"
+                virtualizedGrid model dispatch
+            }
         }
 
 open Main

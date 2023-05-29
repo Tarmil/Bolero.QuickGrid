@@ -13,16 +13,16 @@ module QuickGrid =
     /// <summary>
     /// Component builder for a QuickGrid using a queryable source of data for the grid.
     /// </summary>
-    let withItems<'GridItem> (items: seq<'GridItem>) =
+    let withItems<'item> (items: seq<'item>) =
         "Items" => items.AsQueryable()
-        |> Builders.ComponentWithAttrsBuilder<QuickGrid<'GridItem>>
+        |> Builders.ComponentWithAttrsBuilder<QuickGrid<'item>>
 
     /// <summary>
     /// Component builder for a QuickGrid using a callback that supplies data for the grid.
     /// </summary>
-    let inline withItemsProvider<'GridItem> (provider: GridItemsProvider<'GridItem>) =
+    let inline withItemsProvider<'item> (provider: GridItemsProvider<'item>) =
         "ItemsProvider" => provider
-        |> Builders.ComponentWithAttrsBuilder<QuickGrid<'GridItem>>
+        |> Builders.ComponentWithAttrsBuilder<QuickGrid<'item>>
 
     /// <summary>
     /// An optional CSS class name. If given, this will be included in the class attribute of the rendered table.
@@ -41,17 +41,17 @@ module QuickGrid =
     /// scrolling and causes the grid to fetch and render only the data around the current scroll viewport.
     /// This can greatly improve the performance when scrolling through large data sets.
     ///
-    /// If you use <see cref="Virtualize"/>, you should supply a value for <see cref="ItemSize"/> and must
+    /// If you use <see cref="virtualize"/>, you should supply a value for <see cref="itemSize"/> and must
     /// ensure that every row renders with the same constant height.
     ///
-    /// Generally it's preferable not to use <see cref="Virtualize"/> if the amount of data being rendered
+    /// Generally it's preferable not to use <see cref="virtualize"/> if the amount of data being rendered
     /// is small or if you are using pagination.
     /// </summary>
     let virtualize (value: bool) =
         "Virtualize" => value
         
     /// <summary>
-    /// This is applicable only when using <see cref="Virtualize"/>. It defines an expected height in pixels for
+    /// This is applicable only when using <see cref="virtualize"/>. It defines an expected height in pixels for
     /// each row, allowing the virtualization mechanism to fetch the correct number of items to match the display
     /// size and to ensure accurate scrolling.
     /// </summary>
@@ -70,16 +70,16 @@ module QuickGrid =
     /// unique identifier, such as a primary key value, for each data item.
     ///
     /// This allows the grid to preserve the association between row elements and data items based on their
-    /// unique identifiers, even when the <see cref="GridItem"/> instances are replaced by new copies (for
+    /// unique identifiers, even when the <see cref="item"/> instances are replaced by new copies (for
     /// example, after a new query against the underlying data store).
     ///
-    /// If not set, the @key will be the <see cref="GridItem"/> instance itself.
+    /// If not set, the @key will be the <see cref="item"/> instance itself.
     /// </summary>
-    let itemKey (value: 'GridItem -> obj) =
+    let itemKey (value: 'item -> obj) =
         "ItemKey" => Func<_, _>(value)
 
     /// <summary>
-    /// Optionally links this <see cref="QuickGrid{GridItem}"/> instance with a <see cref="PaginationState"/> model,
+    /// Optionally links this <see cref="QuickGrid{item}"/> instance with a <see cref="PaginationState"/> model,
     /// causing the grid to fetch and render only the current page of data.
     ///
     /// This is normally used in conjunction with a <see cref="Paginator"/> component or some other UI logic
@@ -91,16 +91,16 @@ module QuickGrid =
     type Column =
 
         /// <summary>
-        /// Represents a <see cref="QuickGrid{GridItem}"/> column whose cells display a single value.
+        /// Represents a <see cref="QuickGrid{item}"/> column whose cells display a single value.
         /// </summary>
-        /// <typeparam name="GridItem">The type of data represented by each row in the grid.</typeparam>
-        /// <typeparam name="Prop">The type of the value being displayed in the column's cells.</typeparam>
+        /// <typeparam name="item">The type of data represented by each row in the grid.</typeparam>
+        /// <typeparam name="prop">The type of the value being displayed in the column's cells.</typeparam>
         /// <param name="property">
         /// Defines the value to be displayed in this column's cells.
         /// </param>
-        static member property<'GridItem, 'Prop>(property: Expression<Func<'GridItem, 'Prop>>) =
+        static member property<'item, 'prop>(property: Expression<Func<'item, 'prop>>) =
             "Property" => property
-            |> Builders.ComponentWithAttrsBuilder<PropertyColumn<'GridItem, 'Prop>>
+            |> Builders.ComponentWithAttrsBuilder<PropertyColumn<'item, 'prop>>
 
     module Column =
 
@@ -127,7 +127,7 @@ module QuickGrid =
         /// An optional template for this column's header cell. If not specified, the default header template
         /// includes the <see cref="Title" /> along with any applicable sort indicators and options buttons.
         /// </summary>
-        let headerTemplate (value: ColumnBase<'GridItem> -> Node) =
+        let headerTemplate (value: ColumnBase<'item> -> Node) =
             attr.fragmentWith "HeaderTemplate" value
 
         /// <summary>
@@ -135,7 +135,7 @@ module QuickGrid =
         /// UI will be included in the header cell by default.
         ///
         /// If <see cref="HeaderTemplate" /> is used, it is left up to that template to render any relevant
-        /// "show options" UI and invoke the grid's <see cref="QuickGrid{GridItem}.ShowColumnOptions(ColumnBase{GridItem})" />).
+        /// "show options" UI and invoke the grid's <see cref="QuickGrid{item}.ShowColumnOptions(ColumnBase{item})" />).
         /// </summary>
         let columnOptions (value: Node) =
             attr.fragment "ColumnOptions" value
@@ -143,8 +143,8 @@ module QuickGrid =
         /// <summary>
         /// Indicates whether the data should be sortable by this column.
         ///
-        /// The default value may vary according to the column type (for example, a <see cref="TemplateColumn{GridItem}" />
-        /// is sortable by default if any <see cref="TemplateColumn{GridItem}.SortBy" /> parameter is specified).
+        /// The default value may vary according to the column type (for example, a <see cref="TemplateColumn{item}" />
+        /// is sortable by default if any <see cref="TemplateColumn{item}.SortBy" /> parameter is specified).
         /// </summary>
         let sortable (value: bool) =
             "Sortable" => value
@@ -165,14 +165,17 @@ module QuickGrid =
         /// <summary>
         /// Optionally specifies a format string for the value.
         ///
-        /// Using this requires the <typeparamref name="Prop"/> type to implement <see cref="IFormattable" />.
+        /// Using this requires the <typeparamref name="prop"/> type to implement <see cref="IFormattable" />.
         /// </summary>
         let inline format (value: string) =
             "Format" => value
 
-        let template<'GridItem> (template: 'GridItem -> Node) =
+        /// <summary>
+        /// Represents a <see cref="QuickGrid{item}"/> column whose cells are based on a template.
+        /// </summary>
+        let template<'item> (template: 'item -> Node) =
             attr.fragmentWith "ChildContent" template
-            |> Builders.ComponentWithAttrsBuilder<TemplateColumn<'GridItem>>
+            |> Builders.ComponentWithAttrsBuilder<TemplateColumn<'item>>
 
     module Paginator =
         
@@ -187,5 +190,8 @@ module QuickGrid =
             "Value" => value
             |> Builders.ComponentWithAttrsBuilder<Paginator>
 
+        /// <summary>
+        /// Optionally supplies a template for rendering the page count summary.
+        /// </summary>
         let summaryTemplate (value: Node) =
             attr.fragment "SummaryTemplate" value

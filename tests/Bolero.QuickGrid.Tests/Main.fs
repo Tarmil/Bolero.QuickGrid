@@ -45,6 +45,8 @@ module Main =
 
     type Msg =
         | GridMsg of QuickGrid.Msg<Item>
+        | GotoPage of int
+        | SetError of exn option
 
     let init _ =
         let gridModel, gridCmd = QuickGrid.initItemProvider getItems
@@ -56,14 +58,20 @@ module Main =
     let update message model =
         match message with
         | GridMsg msg ->
-            let gridModel, gridCmd, gridMsg = QuickGrid.update msg model.gridModel
-            { model with
-                gridModel = gridModel
-                error =
-                    match gridMsg with
-                    | QuickGrid.NoOp -> None
-                    | QuickGrid.Error exn -> Some exn },
-            Cmd.map GridMsg gridCmd
+            let gridModel, gridCmd, gridExtMsg = QuickGrid.update msg model.gridModel
+            let gridExtCmd =
+                match gridExtMsg with
+                | QuickGrid.NoOp -> None
+                | QuickGrid.Error error -> Some error
+                |> SetError
+                |> Cmd.ofMsg
+            { model with gridModel = gridModel },
+            Cmd.batch [ gridExtCmd; Cmd.map GridMsg gridCmd ]
+        | GotoPage page ->
+            model,
+            Cmd.OfAsync.attempt (model.pagination.SetCurrentPageIndexAsync >> Async.AwaitTask) (page - 1) (Some >> SetError)
+        | SetError error ->
+            { model with error = error }, Cmd.none
 
     let view model dispatch =
         div {
@@ -88,7 +96,9 @@ module Main =
             }
             QuickGrid.Paginator.withState model.pagination {
                 QuickGrid.Paginator.summaryTemplate (concat {
-                    $"Total: {model.pagination.TotalItemCount}"
+                    "Go to page: "
+                    input { bind.change.int (model.pagination.CurrentPageIndex + 1) (dispatch << GotoPage) }
+                    $" (total items: {model.pagination.TotalItemCount})"
                 })
             }
             cond model.error <| function

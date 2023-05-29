@@ -10,3 +10,7 @@
     border: solid 1px red;
     padding: 5px;
 }
+
+.paginator .summary input {
+    width: 2em;
+}

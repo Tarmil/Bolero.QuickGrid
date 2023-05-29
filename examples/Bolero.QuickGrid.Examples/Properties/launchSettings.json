@@ -1,7 +1,7 @@
 ﻿{
     "$schema": "http://json.schemastore.org/launchsettings.json",
     "profiles": {
-        "Bolero.QuickGrid.Tests (watch)": {
+        "Run": {
             "commandName": "Executable",
             "executablePath": "dotnet",
             "workingDirectory": "$(ProjectDir)",
@@ -10,7 +10,7 @@
             "dotnetRunMessages": "true",
             "applicationUrl": "http://localhost:27643"
         },
-        "Bolero.QuickGrid.Tests": {
+        "Watch": {
             "commandName": "Project",
             "launchBrowser": true,
             "applicationUrl": "http://localhost:27644",

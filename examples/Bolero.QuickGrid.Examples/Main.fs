@@ -1,4 +1,4 @@
-namespace Bolero.QuickGrid.Tests
+namespace Bolero.QuickGrid.Examples
 
 open System
 open Elmish

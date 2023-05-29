@@ -1,4 +1,4 @@
-namespace Bolero.QuickGrid.Tests
+namespace Bolero.QuickGrid.Examples
 
 open Microsoft.AspNetCore.Components.WebAssembly.Hosting
 open Microsoft.Extensions.DependencyInjection

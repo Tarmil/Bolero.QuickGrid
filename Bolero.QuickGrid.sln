@@ -7,9 +7,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9D993112-000
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Bolero.QuickGrid", "src\Bolero.QuickGrid\Bolero.QuickGrid.fsproj", "{A8948F00-55BF-4149-B343-4036C95EC142}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{8AFE17C2-6E1D-4BC5-9E1D-44457E6A9C22}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{8AFE17C2-6E1D-4BC5-9E1D-44457E6A9C22}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Bolero.QuickGrid.Tests", "tests\Bolero.QuickGrid.Tests\Bolero.QuickGrid.Tests.fsproj", "{FB09498A-F527-4CB9-9E3B-444B9864E3C8}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Bolero.QuickGrid.Examples", "examples\Bolero.QuickGrid.Examples\Bolero.QuickGrid.Examples.fsproj", "{FB09498A-F527-4CB9-9E3B-444B9864E3C8}"
 EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
